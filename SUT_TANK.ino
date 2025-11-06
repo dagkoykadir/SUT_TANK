@@ -137,7 +137,7 @@ Preferences preferences;
 float minFreezeSet = 4.0;      // Minimum cooling setpoint (°C)
 float maxFreezeSet = 10.0;     // Maximum cooling setpoint (°C)
 float tempSetpoint = 6.0;      // Target temperature (°C)
-float tempHisterezis = 1.0;    // Temperature hysteresis (°C)
+float tempHysteresis = 1.0;    // Temperature hysteresis (°C)
 int mixerOnTime = 15;          // Mixer ON time (minutes)
 int mixerOffTime = 45;         // Mixer OFF time (minutes)
 int coolerMinOnTime = 5;       // Minimum cooler ON time (minutes)
@@ -745,7 +745,7 @@ void loadPreferences() {
   preferences.begin(PREFERENCES_NAMESPACE, false);
   
   tempSetpoint = preferences.getFloat("tempSet", 6.0);
-  tempHisterezis = preferences.getFloat("tempHyst", 1.0);
+  tempHysteresis = preferences.getFloat("tempHyst", 1.0);
   minFreezeSet = preferences.getFloat("minFreeze", 4.0);
   maxFreezeSet = preferences.getFloat("maxFreeze", 10.0);
   mixerOnTime = preferences.getInt("mixerOn", 15);
@@ -763,7 +763,7 @@ void savePreferences() {
   preferences.begin(PREFERENCES_NAMESPACE, false);
   
   preferences.putFloat("tempSet", tempSetpoint);
-  preferences.putFloat("tempHyst", tempHisterezis);
+  preferences.putFloat("tempHyst", tempHysteresis);
   preferences.putFloat("minFreeze", minFreezeSet);
   preferences.putFloat("maxFreeze", maxFreezeSet);
   preferences.putInt("mixerOn", mixerOnTime);
@@ -779,7 +779,7 @@ void savePreferences() {
 
 void resetToDefaults() {
   tempSetpoint = 6.0;
-  tempHisterezis = 1.0;
+  tempHysteresis = 1.0;
   minFreezeSet = 4.0;
   maxFreezeSet = 10.0;
   mixerOnTime = 15;
@@ -879,8 +879,8 @@ void updateCoolerControl() {
   updateTimer(&coolerTimer);
   
   // Temperature-based control with hysteresis
-  float upperLimit = tempSetpoint + tempHisterezis;
-  float lowerLimit = tempSetpoint - tempHisterezis;
+  float upperLimit = tempSetpoint + tempHysteresis;
+  float lowerLimit = tempSetpoint - tempHysteresis;
   
   // Check if minimum time constraints are met
   bool canChangState = !coolerTimer.active;
@@ -1073,10 +1073,10 @@ void processBlECommand(const char* jsonString) {
     if (doc.containsKey("value")) {
       float newHyst = doc["value"];
       if (newHyst >= 0.5 && newHyst <= 5.0) {
-        tempHisterezis = newHyst;
+        tempHysteresis = newHyst;
         savePreferences();
         Serial.print("Hysteresis updated: ");
-        Serial.println(tempHisterezis);
+        Serial.println(tempHysteresis);
         sendBLESettings();
       }
     }
@@ -1187,7 +1187,7 @@ void sendBLESettings() {
   
   doc["cmd"] = "SETTINGS";
   doc["tempSetpoint"] = tempSetpoint;
-  doc["tempHysteresis"] = tempHisterezis;
+  doc["tempHysteresis"] = tempHysteresis;
   doc["minFreeze"] = minFreezeSet;
   doc["maxFreeze"] = maxFreezeSet;
   doc["mixerOnTime"] = mixerOnTime;
